@@ -18,11 +18,83 @@ import org.fcitx.fcitx5.android.data.prefs.ManagedPreference
 import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.input.popup.PopupAction
 import splitties.views.imageResource
+ 
+// KeyConfigLoader.kt - 新增文件
+import org.json.JSONArray
+import org.json.JSONObject
+
+object KeyConfigLoader {
+    fun loadLayoutFromAsset(context: Context): List<List<KeyDef>> {
+        return try {
+            val jsonString = context.assets.open("keyboard_layout.json")
+                .bufferedReader().use { it.readText() }
+            parseLayout(JSONObject(jsonString))
+        } catch (e: Exception) {
+            // 重要：配置加载或解析失败时，回退到原始默认布局
+            org.fcitx.fcitx5.android.input.keyboard.TextKeyboard.Layout
+        }
+    }
+
+    private fun parseLayout(config: JSONObject): List<List<KeyDef>> {
+        val layoutArray = config.getJSONArray("layout")
+        val newLayout = mutableListOf<List<KeyDef>>()
+
+        for (i in 0 until layoutArray.length()) {
+            val rowArray = layoutArray.getJSONArray(i)
+            val rowKeys = mutableListOf<KeyDef>()
+
+            for (j in 0 until rowArray.length()) {
+                val keyObj = rowArray.getJSONObject(j)
+                // 获取按键类型和参数
+                val (keyType, args) = keyObj.names().let { names ->
+                    val type = names!!.getString(0)
+                    val argsArray = keyObj.getJSONArray(type)
+                    type to argsArray
+                }
+                // 动态创建KeyDef
+                val keyDef = createKeyDef(keyType, args)
+                rowKeys.add(keyDef)
+            }
+            newLayout.add(rowKeys)
+        }
+        return newLayout
+    }
+
+    private fun createKeyDef(type: String, args: JSONArray): KeyDef {
+        return when (type) {
+            "AlphabetKey" -> AlphabetKey(
+                args.getString(0), // 主标签
+                args.getString(1), // 下滑输出/备用标签
+                args.optString(2) // 可选提示符
+            )
+            "CapsKey" -> CapsKey()
+            "BackspaceKey" -> BackspaceKey()
+            "LayoutSwitchKey" -> LayoutSwitchKey(args.getString(0), args.optString(1, ""))
+            "LanguageKey" -> LanguageKey()
+            "SpaceKey" -> SpaceKey()
+            "ReturnKey" -> ReturnKey()
+            "CommaKey" -> CommaKey(args.getDouble(0).toFloat(), getVariant(args, 1))
+            "SymbolKey" -> SymbolKey(args.getString(0), args.getDouble(1).toFloat(), getVariant(args, 2))
+            // 可根据需要继续添加其他按键类型...
+            else -> throw IllegalArgumentException("不支持的按键类型: $$type")
+        }
+    }
+
+    private fun getVariant(args: JSONArray, index: Int): KeyDef.Appearance.Variant {
+        return if (index < args.length()) {
+            KeyDef.Appearance.Variant.valueOf(args.getString(index))
+        } else {
+            KeyDef.Appearance.Variant.Normal
+        }
+    }
+}
+ 
 
 @SuppressLint("ViewConstructor")
 class TextKeyboard(
     context: Context,
-    theme: Theme
+    theme: Theme,
+    KeyConfigLoader.loadLayoutFromAsset(context) // 将硬编码的Layout替换为动态加载的配置
 ) : BaseKeyboard(context, theme, Layout) {
 
     enum class CapsState { None, Once, Lock }
