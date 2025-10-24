@@ -61,7 +61,7 @@ class TextKeyboard(
                 AlphabetKey("C", "\""),
                 AlphabetKey("V", "?"),
                 AlphabetKey("B", "!"),
-                AlphabetKey("N", "~"),
+                AlphabetKey("N", "`"),
                 AlphabetKey("M", "\\"),
                 BackspaceKey()
             ),
