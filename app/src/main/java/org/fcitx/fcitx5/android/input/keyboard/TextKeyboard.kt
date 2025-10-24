@@ -347,17 +347,13 @@ class TextKeyboard(
                 if (it is AltTextKeyView) {
                     it.def as KeyDef.Appearance.AltText
                     val keyJson = layoutJson.flatten().find { key -> key.main == it.def.character }
-                    val altDisplayText = if (keyJson != null) {
-                        keyJson.altDisplay ?: keyJson.alt
-                    } else {
-                        it.def.character
-                    }
-                    it.altText.text = transformPunctuation(altDisplayText)
+                    val altText = keyJson?.alt ?: it.def.character
+                    it.altText.text = transformPunctuation(altText)
                 } else {
                     it.def as KeyDef.Appearance.Text
                     val keyJson = layoutJson.flatten().find { key -> key.main == it.def.character }
-                    val altMainText = keyJson?.alt ?: it.def.character
-                    it.mainText.text = altMainText.let { str ->
+                    val altText = keyJson?.alt ?: it.def.character
+                    it.mainText.text = altText?.let { str ->
                         if (str[0].run { isLetter() || isWhitespace() }) return@forEach
                         transformPunctuation(str)
                     }
