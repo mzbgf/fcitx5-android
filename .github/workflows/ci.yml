@@ -73,6 +73,7 @@ jobs:
 
       - name: Prepare personal build sources
         run: |
+          chmod +x ./prepare_personal_build.sh
           ./prepare_personal_build.sh
 
       - name: Setup Gradle
