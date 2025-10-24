@@ -349,11 +349,11 @@ class TextKeyboard(
                     val keyJson = layoutJson.flatten().find { key -> key.main == it.def.character }
                     val altText = keyJson?.alt ?: it.def.character
                     it.altText.text = transformPunctuation(altText)
+                    it.mainText.text = it.altText.text
+                    it.def.displayText = it.altText.text
                 } else {
                     it.def as KeyDef.Appearance.Text
-                    val keyJson = layoutJson.flatten().find { key -> key.main == it.def.character }
-                    val altText = keyJson?.alt ?: it.def.character
-                    it.mainText.text = altText?.let { str ->
+                    it.mainText.text = it.def.displayText.let { str ->
                         if (str[0].run { isLetter() || isWhitespace() }) return@forEach
                         transformPunctuation(str)
                     }
