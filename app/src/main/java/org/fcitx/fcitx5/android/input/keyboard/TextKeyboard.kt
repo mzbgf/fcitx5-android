@@ -129,12 +129,12 @@ class TextKeyboard(
                 AlphabetKey("C", "\""),
                 AlphabetKey("V", "?"),
                 AlphabetKey("B", "!"),
-                AlphabetKey("N", "~"),
+                AlphabetKey("N", "`"),
                 AlphabetKey("M", "\\"),
                 BackspaceKey()
             ),
             listOf(
-                LayoutSwitchKey("?123", ""),
+                LayoutSwitchKey("?123", "\t"),
                 CommaKey(0.1f, KeyDef.Appearance.Variant.Alternative),
                 LanguageKey(),
                 SpaceKey(),
@@ -341,35 +341,15 @@ class TextKeyboard(
     }
 
     private fun updatePunctuationKeys() {
-        val layoutJson = getTextLayoutJsonForIme(ime?.uniqueName ?: "default")
-        if (layoutJson != null) {
-            textKeys.forEach {
-                if (it is AltTextKeyView) {
-                    it.def as KeyDef.Appearance.AltText
-                    val keyJson = layoutJson.flatten().find { key -> key.main == it.def.character }
-                    val altText = keyJson?.alt ?: it.def.character
-                    it.altText.text = transformPunctuation(altText)
-                    it.mainText.text = it.altText.text
-                    it.def.displayText = it.altText.text
-                } else {
-                    it.def as KeyDef.Appearance.Text
-                    it.mainText.text = it.def.displayText.let { str ->
-                        if (str[0].run { isLetter() || isWhitespace() }) return@forEach
-                        transformPunctuation(str)
-                    }
-                }
-            }
-        } else {
-            textKeys.forEach {
-                if (it is AltTextKeyView) {
-                    it.def as KeyDef.Appearance.AltText
-                    it.altText.text = transformPunctuation(it.def.altText)
-                } else {
-                    it.def as KeyDef.Appearance.Text
-                    it.mainText.text = it.def.displayText.let { str ->
-                        if (str[0].run { isLetter() || isWhitespace() }) return@forEach
-                        transformPunctuation(str)
-                    }
+        textKeys.forEach {
+            if (it is AltTextKeyView) {
+                it.def as KeyDef.Appearance.AltText
+                it.altText.text = transformPunctuation(it.def.altText)
+            } else {
+                it.def as KeyDef.Appearance.Text
+                it.mainText.text = it.def.displayText.let { str ->
+                    if (str[0].run { isLetter() || isWhitespace() }) return@forEach
+                    transformPunctuation(str)
                 }
             }
         }
