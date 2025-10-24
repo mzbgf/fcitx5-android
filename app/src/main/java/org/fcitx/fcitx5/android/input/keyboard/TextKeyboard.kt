@@ -64,8 +64,7 @@ object KeyConfigLoader {
         return when (type) {
             "AlphabetKey" -> AlphabetKey(
                 args.getString(0), // 主标签
-                args.getString(1), // 下滑输出/备用标签
-                args.optString(2) // 可选提示符
+                args.getString(1) // 下滑输出/备用标签
             )
             "CapsKey" -> CapsKey()
             "BackspaceKey" -> BackspaceKey()
